@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Mission: Rocket Launch - Future Tenses</title>
+<link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at 50% 30%, #15103a 0%, #09061c 60%, #03010b 100%);
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    #space-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: twinkle 3s infinite ease-in-out;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    .shooting-star {
+      position: absolute;
+      width: 140px;
+      height: 2px;
+      background: linear-gradient(90deg, #00f0ff, transparent);
+      transform: rotate(-35deg);
+      opacity: 0;
+      animation: shoot 8s infinite linear;
+    }
+    @keyframes shoot {
+      0% { transform: translate(120vw, -10vh) rotate(-35deg); opacity: 1; }
+      15% { transform: translate(-20vw, 80vh) rotate(-35deg); opacity: 0; }
+      100% { transform: translate(-20vw, 80vh) rotate(-35deg); opacity: 0; }
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 28px;
+      background: rgba(13, 11, 38, 0.7);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .mission-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #00f0ff, #d946ef);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+    .hud-trackers {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .tracker-badge {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      color: #38bdf8;
+    }
+    .audio-btn {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .audio-btn:hover {
+      background: #00f0ff;
+      color: #09061c;
+      box-shadow: 0 0 12px #00f0ff;
+    }
+
+    main {
+      position: relative;
+      z-index: 5;
+      max-width: 1540px;
+      margin: 15px auto;
+      padding: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Stage 1: Grammar Panel */
+    .mission-card {
+      background: rgba(18, 14, 48, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 16px;
+      padding: 22px 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 240, 255, 0.08);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .card-label {
+      color: #38bdf8;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+    .question-prompt {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      margin-bottom: 18px;
+      color: #f1f5f9;
+    }
+    .input-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .grammar-input {
+      background: rgba(8, 6, 25, 0.8);
+      border: 2px solid rgba(0, 240, 255, 0.4);
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 1.1rem;
+      color: #fff;
+      outline: none;
+      min-width: 260px;
+      flex: 1;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .grammar-input:focus {
+      border-color: #00f0ff;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+    .primary-btn {
+      background: linear-gradient(135deg, #00f0ff, #0284c7);
+      color: #030712;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+    }
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+    }
+    .hint-btn {
+      background: rgba(217, 70, 239, 0.2);
+      border: 1px solid #d946ef;
+      color: #f0abfc;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .hint-btn:hover {
+      background: rgba(217, 70, 239, 0.4);
+      box-shadow: 0 0 12px rgba(217, 70, 239, 0.5);
+    }
+    .feedback-message {
+      margin-top: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .feedback-message.error {
+      color: #fb7185;
+      animation: shake 0.4s ease;
+    }
+    .feedback-message.success {
+      color: #4ade80;
+    }
+    .hint-box {
+      margin-top: 14px;
+      padding: 12px 18px;
+      background: rgba(217, 70, 239, 0.12);
+      border-left: 4px solid #d946ef;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      color: #e879f9;
+      display: none;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* Delivery Overlay */
+    #delivery-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 1, 15, 0.88);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      backdrop-filter: blur(8px);
+    }
+    .delivery-container {
+      text-align: center;
+      cursor: pointer;
+    }
+    .delivery-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      color: #00f0ff;
+      margin-bottom: 24px;
+      text-shadow: 0 0 20px #00f0ff;
+      animation: pulseText 1.5s infinite;
+    }
+    @keyframes pulseText {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+    .box-img-wrapper {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: floatBox 3s ease-in-out infinite;
+    }
+    .box-img-wrapper:hover { transform: scale(1.12); }
+    @keyframes floatBox {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+    .box-img-wrapper img, .box-img-wrapper svg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.7));
+    }
+    .box-hint {
+      margin-top: 18px;
+      font-size: 1.1rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+    }
+    .revealed-icon-wrapper {
+      display: none;
+      text-align: center;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.2); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .revealed-icon-wrapper img, .revealed-icon-wrapper svg {
+      width: 230px;
+      height: 230px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 35px rgba(217, 70, 239, 0.85));
+    }
+
+    /* ASSEMBLY SECTION */
+    .assembly-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .assembly-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .assembly-status {
+      font-size: 1rem;
+      color: #94a3b8;
+    }
+    .assembly-deck {
+      background: radial-gradient(circle at 50% 50%, rgba(20, 16, 55, 0.6) 0%, rgba(10, 8, 30, 0.95) 100%);
+      border: 2px dashed rgba(0, 240, 255, 0.4);
+      border-radius: 20px;
+      height: 1050px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(0, 240, 255, 0.15);
+    }
+    .assembly-deck::before {
+      content: "ASSEMBLY PLATFORM (FULL SIZE 2X SCALE - DRAG & BUILD)";
+      position: absolute;
+      top: 18px;
+      left: 24px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: rgba(0, 240, 255, 0.2);
+      pointer-events: none;
+    }
+
+    /* DRAGGABLE PARTS (FROM parts/ FOLDER) */
+    .draggable-part {
+      position: absolute;
+      cursor: grab;
+      touch-action: none;
+      z-index: 20;
+      transition: filter 0.2s, box-shadow 0.2s;
+    }
+    .draggable-part:active {
+      cursor: grabbing;
+      z-index: 60;
+    }
+    .draggable-part img, .draggable-part svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75));
+    }
+    .draggable-part:hover img, .draggable-part:hover svg {
+      filter: drop-shadow(0 0 35px rgba(0, 240, 255, 0.95));
+    }
+
+    #finish-assembly-btn {
+      display: none;
+      align-self: center;
+      margin-top: 14px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-size: 1.3rem;
+      padding: 16px 46px;
+      border-radius: 40px;
+      border: none;
+      font-weight: 800;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+      animation: pulseSuccess 2s infinite;
+    }
+    @keyframes pulseSuccess {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(16, 185, 129, 0.8); }
+    }
+
+    /* Stage 2: PIN Mini Puzzles */
+    #puzzle-stage-container {
+      display: none;
+    }
+    .pin-display-dock {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .pin-slot {
+      width: 74px;
+      height: 86px;
+      background: rgba(10, 8, 30, 0.9);
+      border: 2px solid rgba(0, 240, 255, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: #38bdf8;
+      font-family: 'Courier New', Courier, monospace;
+      box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+    .pin-slot.revealed {
+      border-color: #d946ef;
+      color: #f0abfc;
+      text-shadow: 0 0 15px #d946ef;
+      animation: popIn 0.4s ease;
+    }
+
+    .match-columns {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .match-col {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .match-item {
+      background: rgba(30, 27, 75, 0.6);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    .match-item:hover {
+      border-color: #00f0ff;
+      background: rgba(30, 27, 75, 0.9);
+    }
+    .match-item.selected {
+      border-color: #d946ef;
+      background: rgba(217, 70, 239, 0.3);
+      box-shadow: 0 0 12px rgba(217, 70, 239, 0.5);
+    }
+    .match-item.matched {
+      opacity: 0.4;
+      pointer-events: none;
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+    }
+
+    .words-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 56px;
+      padding: 12px;
+      background: rgba(10, 8, 30, 0.6);
+      border: 1px dashed rgba(0, 240, 255, 0.4);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .word-tile {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(2, 132, 199, 0.4));
+      border: 1px solid #00f0ff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .word-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 10px #00f0ff;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .quiz-opt-btn {
+      background: rgba(30, 27, 75, 0.6);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-opt-btn:hover {
+      border-color: #00f0ff;
+      background: rgba(0, 240, 255, 0.15);
+    }
+
+    /* FULLSCREEN LAUNCH CONSOLE MODAL OVERLAY */
+    #launch-console-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 1, 12, 0.94);
+      z-index: 250;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #launch-console-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .console-stage-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #00f0ff;
+      text-shadow: 0 0 18px rgba(0, 240, 255, 0.8);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    /* Timer Container: STRICT 1:1 ASPECT RATIO */
+    .timer-console-wrapper {
+      position: relative;
+      width: 500px;
+      height: 500px;
+      max-width: 90vw;
+      max-height: 68vh;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 240, 255, 0.3);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .timer-bg-img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+    }
+
+    /* DIGITAL LCD PIN DISPLAY */
+    .overlay-display {
+      position: absolute;
+      top: 11.5%;
+      left: 23.5%;
+      width: 53.0%;
+      height: 11.8%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #38ef7d;
+      letter-spacing: 12px;
+      text-shadow: 0 0 10px #38ef7d, 0 0 20px #11998e;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* PRECISE TRANSPARENT OVERLAYS DERIVED FROM THE BLUE SQUARES IN THE SCREENSHOT */
+    .btn-key-overlay {
+      position: absolute;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      border-radius: 6px;
+      z-index: 10;
+    }
+    .btn-key-overlay:active {
+      background: rgba(0, 240, 255, 0.35);
+    }
+
+    /* PRECISE CIRCULAR RED LAUNCH BUTTON OVERLAY DERIVED FROM THE RED CIRCLE */
+    .btn-launch-overlay {
+      position: absolute;
+      top: 64.8%;
+      left: 38.8%;
+      width: 22.0%;
+      height: 21.8%;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      z-index: 10;
+    }
+    .btn-launch-overlay:active {
+      background: rgba(239, 68, 68, 0.5);
+    }
+
+    body.show-calibration .overlay-display {
+      background: rgba(56, 239, 125, 0.2);
+      border: 2px dashed #38ef7d;
+    }
+    body.show-calibration .btn-key-overlay {
+      border: 2px solid rgba(0, 240, 255, 0.85) !important;
+      background: rgba(0, 240, 255, 0.15) !important;
+    }
+    body.show-calibration .btn-launch-overlay {
+      border: 2px solid rgba(239, 68, 68, 0.9) !important;
+      background: rgba(239, 68, 68, 0.25) !important;
+    }
+
+    .console-controls-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    /* Launch Animation Overlays */
+    #launch-cinematic-modal {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, #0d0a27 0%, #03010b 100%);
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Compact ready rocket on launchpad */
+    .ready-rocket-flight-box {
+      position: absolute;
+      bottom: -40px;
+      width: 260px;
+      height: 520px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s ease-out;
+      z-index: 5;
+    }
+    .ready-rocket-flight-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 25px rgba(251, 146, 60, 0.6));
+    }
+
+    /* COUNTDOWN BADGE DISPLAYED RIGHT OVER THE ROCKET WITH BLUR BACKGROUND */
+    .countdown-overlay-box {
+      position: absolute;
+      z-index: 20;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 200px;
+      min-height: 200px;
+      padding: 20px 40px;
+      border-radius: 28px;
+      background: rgba(8, 6, 26, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 2px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.35), inset 0 0 20px rgba(0, 240, 255, 0.2);
+      pointer-events: none;
+    }
+    .countdown-number {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 8.5rem;
+      font-weight: 900;
+      color: #00f0ff;
+      text-shadow: 0 0 25px #00f0ff, 0 0 50px #00f0ff;
+      animation: scaleCountdown 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes scaleCountdown {
+      0% { transform: scale(0.4); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.95; }
+    }
+
+    /* Rocket liftoff ascent animation */
+    @keyframes readyRocketLiftoff {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+      15% {
+        transform: translateY(-20px) scale(0.98) rotate(-0.5deg);
+      }
+      35% {
+        transform: translateY(-120px) scale(0.92) rotate(0.5deg);
+      }
+      65% {
+        transform: translateY(-550px) scale(0.7) rotate(-0.5deg);
+      }
+      100% {
+        transform: translateY(-1600px) scale(0.15) rotate(0deg);
+        opacity: 0;
+      }
+    }
+    .rocket-launching-motion {
+      animation: readyRocketLiftoff 4.0s cubic-bezier(0.42, 0, 0.2, 1) forwards !important;
+    }
+
+    @keyframes engineRumble {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-3px, 2px); }
+      50% { transform: translate(3px, -2px); }
+      75% { transform: translate(-2px, -3px); }
+    }
+    .rumbling {
+      animation: engineRumble 0.08s infinite ease-in-out;
+    }
+
+    /* Victory Modal */
+    #victory-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 1, 15, 0.92);
+      z-index: 400;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 30px;
+    }
+    .victory-title {
+      font-size: 3.4rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      background: linear-gradient(90deg, #38bdf8, #a855f7, #f43f5e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+    .victory-subtitle {
+      font-size: 1.4rem;
+      color: #94a3b8;
+      max-width: 680px;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="space-bg">
+    <div class="shooting-star" style="top: 15%; animation-delay: 2s;"></div>
+    <div class="shooting-star" style="top: 45%; animation-delay: 6s;"></div>
+  </div>
+
+  <header>
+    <div class="mission-title">🚀 Space Mission: Rocket Launch</div>
+    <div class="hud-trackers">
+      <div class="tracker-badge" id="parts-tracker">COMPONENTS: 0/5</div>
+      <div class="tracker-badge" id="pin-tracker">PIN CODES: 0/4</div>
+      <button class="audio-btn" id="audio-toggle" title="Toggle Sound">🔊</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stage 1: Grammar Challenge -->
+    <section class="mission-card" id="grammar-section">
+      <div class="card-header">
+        <span class="card-label" id="grammar-step-label">CHALLENGE 1 OF 5: FUTURE TENSES</span>
+        <button class="hint-btn" id="hint-toggle-btn">💡 HINT</button>
+      </div>
+      <div class="question-prompt" id="grammar-prompt">Loading question...</div>
+      
+      <div class="input-row">
+        <input type="text" id="grammar-input" class="grammar-input" placeholder="Type the correct verb form..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button class="primary-btn" id="submit-grammar-btn">SUBMIT ANSWER</button>
+      </div>
+
+      <div class="hint-box" id="hint-box"></div>
+      <div class="feedback-message" id="grammar-feedback"></div>
+    </section>
+
+    <!-- Stage 2: Pure Freeform Horizontal Assembly Platform -->
+    <section class="assembly-section" id="assembly-section">
+      <div class="assembly-header">
+        <span class="card-label">ASSEMBLY BAY (EXPANDED TO ACCOMMODATE 2X PARTS)</span>
+        <span class="assembly-status" id="assembly-deck-status">Components collected: 0 of 5</span>
+      </div>
+      
+      <div class="assembly-deck" id="assembly-deck">
+        <!-- Draggable parts injected here dynamically from parts/ folder -->
+      </div>
+
+      <button id="finish-assembly-btn">CONFIRM ROCKET ASSEMBLY ⚡</button>
+    </section>
+
+    <!-- Stage 3: PIN Decryption Mini-Puzzles -->
+    <section class="mission-card" id="puzzle-stage-container">
+      <div class="card-header">
+        <span class="card-label" id="puzzle-step-label">PIN DECRYPTION: PUZZLE 1 OF 4</span>
+      </div>
+
+      <div class="pin-display-dock">
+        <div class="pin-slot" id="slot-0">?</div>
+        <div class="pin-slot" id="slot-1">?</div>
+        <div class="pin-slot" id="slot-2">?</div>
+        <div class="pin-slot" id="slot-3">?</div>
+      </div>
+
+      <div id="puzzle-body"></div>
+      <div class="feedback-message" id="puzzle-feedback"></div>
+    </section>
+  </main>
+
+  <!-- Stage 4: Launch Console OVERLAY MODAL -->
+  <div id="launch-console-modal">
+    <div class="console-stage-title">LAUNCH CONTROL TERMINAL</div>
+    
+    <div class="timer-console-wrapper" id="timer-console-box">
+      <img src="timer/timer.png" class="timer-bg-img" id="timer-img" alt="Timer Console" onerror="this.onerror=null; this.src='timer.png';">
+      
+      <div class="overlay-display" id="console-pin-display">----</div>
+
+      <!-- EXACT DIGIT BUTTON OVERLAYS 1 - 9 -->
+      <button class="btn-key-overlay" data-digit="1" style="top: 31.0%; left: 29.5%; width: 9.0%; height: 7.7%;" title="1"></button>
+      <button class="btn-key-overlay" data-digit="2" style="top: 31.0%; left: 39.7%; width: 9.0%; height: 7.7%;" title="2"></button>
+      <button class="btn-key-overlay" data-digit="3" style="top: 31.0%; left: 49.9%; width: 9.0%; height: 7.7%;" title="3"></button>
+      <button class="btn-key-overlay" data-digit="4" style="top: 39.7%; left: 29.5%; width: 9.0%; height: 7.7%;" title="4"></button>
+      <button class="btn-key-overlay" data-digit="5" style="top: 39.7%; left: 39.7%; width: 9.0%; height: 7.7%;" title="5"></button>
+      <button class="btn-key-overlay" data-digit="6" style="top: 39.7%; left: 49.9%; width: 9.0%; height: 7.7%;" title="6"></button>
+      <button class="btn-key-overlay" data-digit="7" style="top: 48.4%; left: 29.5%; width: 9.0%; height: 7.7%;" title="7"></button>
+      <button class="btn-key-overlay" data-digit="8" style="top: 48.4%; left: 39.7%; width: 9.0%; height: 7.7%;" title="8"></button>
+      <button class="btn-key-overlay" data-digit="9" style="top: 48.4%; left: 49.9%; width: 9.0%; height: 7.7%;" title="9"></button>
+
+      <!-- PRECISE CIRCULAR RED LAUNCH BUTTON OVERLAY -->
+      <button class="btn-launch-overlay" id="invisible-launch-trigger" title="ACTIVATE LAUNCH"></button>
+    </div>
+
+    <div class="console-controls-bar">
+      <button class="hint-btn" id="pin-clear-btn" style="border-color:#00f0ff; color:#00f0ff; font-size:1.05rem;">CLEAR PIN ⌫</button>
+      <button class="hint-btn" id="toggle-calibration-btn" style="border-color:#fbbf24; color:#fbbf24; font-size:0.9rem;" title="Show/Hide Button Boundaries">👁️ SHOW BUTTON BORDERS</button>
+    </div>
+    <div class="feedback-message" id="console-feedback" style="justify-content:center; font-size:1.15rem; margin-top:8px;"></div>
+  </div>
+
+  <!-- Delivery Box Overlay -->
+  <div id="delivery-overlay">
+    <div class="delivery-container" id="delivery-box-interactive">
+      <div class="delivery-title" id="delivery-heading">NEW DELIVERY INCOMING!</div>
+      <div class="box-img-wrapper" id="box-wrapper">
+        <img src="box.png" alt="Delivery Box" onerror="this.onerror=null; this.src=createBoxFallbackSVG();">
+      </div>
+      <div class="revealed-icon-wrapper" id="revealed-icon-wrapper">
+        <img id="unboxed-icon-img" src="" alt="Component Icon">
+      </div>
+      <div class="box-hint" id="delivery-instruction">Click the container to unpack your rocket component!</div>
+    </div>
+  </div>
+
+  <!-- Launch Cinematic Modal with Blurred Glass Countdown Overlay -->
+  <div id="launch-cinematic-modal">
+    <div class="ready-rocket-flight-box" id="ready-rocket-box">
+      <img src="ready rocket.png" id="ready-rocket-img" alt="Rocket Launch" onerror="this.onerror=null; this.src='ready%20rocket.png';">
+    </div>
+
+    <div class="countdown-overlay-box" id="countdown-overlay-box">
+      <div class="countdown-number" id="countdown-text">3</div>
+    </div>
+  </div>
+
+  <!-- Victory Screen -->
+  <div id="victory-modal">
+    <div class="victory-title">MISSION COMPLETE!</div>
+    <div class="victory-subtitle">Congratulations, Commander! You mastered English Future Tenses, assembled the spaceship, and successfully launched into orbit!</div>
+    <button class="primary-btn" id="restart-game-btn" style="font-size:1.2rem; padding:16px 40px;">PLAY AGAIN 🔁</button>
+  </div>
+
+  <script>
+    /* =========================================================
+       AUDIO SYNTHESIZER: REAL HEAVY ROCKET JET BLAST ROAR
+       ========================================================= */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      panelKeySound(digit) {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const t = this.ctx.currentTime;
+          
+          const noiseBuffer = this.ctx.createBuffer(1, Math.floor(this.ctx.sampleRate * 0.02), this.ctx.sampleRate);
+          const output = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < noiseBuffer.length; i++) output[i] = Math.random() * 2 - 1;
+          const noiseSrc = this.ctx.createBufferSource();
+          noiseSrc.buffer = noiseBuffer;
+          const noiseFilter = this.ctx.createBiquadFilter();
+          noiseFilter.type = 'bandpass';
+          noiseFilter.frequency.setValueAtTime(1800, t);
+          const noiseGain = this.ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.25, t);
+          noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.02);
+          noiseSrc.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(this.ctx.destination);
+          noiseSrc.start(t);
+
+          const freqMap = {
+            '1': [697, 1209], '2': [697, 1336], '3': [697, 1477],
+            '4': [770, 1209], '5': [770, 1336], '6': [770, 1477],
+            '7': [852, 1209], '8': [852, 1336], '9': [852, 1477]
+          };
+          const freqs = freqMap[digit] || [750, 1300];
+
+          freqs.forEach(f => {
+            const osc = this.ctx.createOscillator();
+            const g = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, t);
+            g.gain.setValueAtTime(0.16, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+            osc.connect(g);
+            g.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.11);
+          });
+        } catch(e) {}
+      }
+
+      countdownBeep(isFinal = false) {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const t = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          if (!isFinal) {
+            osc.frequency.setValueAtTime(587.33, t);
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.28);
+          } else {
+            osc.frequency.setValueAtTime(1174.66, t);
+            gain.gain.setValueAtTime(0.45, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.6);
+          }
+        } catch(e) {}
+      }
+
+      beep(freq = 440, type = 'sine', duration = 0.15, gainVal = 0.2) {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+      }
+
+      correct() {
+        this.beep(523.25, 'triangle', 0.1, 0.25);
+        setTimeout(() => this.beep(659.25, 'triangle', 0.1, 0.25), 100);
+        setTimeout(() => this.beep(783.99, 'triangle', 0.25, 0.3), 200);
+      }
+      wrong() {
+        this.beep(220, 'sawtooth', 0.18, 0.25);
+        setTimeout(() => this.beep(180, 'sawtooth', 0.25, 0.25), 160);
+      }
+      pop() {
+        this.beep(800, 'sine', 0.08, 0.35);
+      }
+
+      /* REALISTIC DEEP ROCKET JET BLAST ROAR (BROWN/PINK NOISE + MULTI-STAGE FILTERS) */
+      ignition() {
+        if (!this.enabled) return;
+        this.init();
+        try {
+          const t = this.ctx.currentTime;
+          const duration = 4.8;
+          const sampleRate = this.ctx.sampleRate;
+          const bufferSize = Math.floor(sampleRate * duration);
+          const noiseBuffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+
+          // Generate true continuous Brown noise (heavy low-end rumble)
+          let lastOut = 0.0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            lastOut = (lastOut + (0.025 * white)) / 1.025;
+            data[i] = lastOut * 3.8;
+          }
+
+          const noiseSource = this.ctx.createBufferSource();
+          noiseSource.buffer = noiseBuffer;
+
+          // Resonant Low-pass Filter (Opening rocket thrust nozzle)
+          const lowFilter = this.ctx.createBiquadFilter();
+          lowFilter.type = 'lowpass';
+          lowFilter.frequency.setValueAtTime(140, t);
+          lowFilter.frequency.exponentialRampToValueAtTime(1200, t + 0.8); // ignition roar
+          lowFilter.frequency.exponentialRampToValueAtTime(1600, t + 2.2); // full atmospheric speed
+          lowFilter.frequency.exponentialRampToValueAtTime(220, t + duration); // distance fade
+          lowFilter.Q.setValueAtTime(2.2, t);
+
+          // Sub-bass oscillator (50Hz - 35Hz subsonic physical vibration)
+          const subBass = this.ctx.createOscillator();
+          subBass.type = 'sawtooth';
+          subBass.frequency.setValueAtTime(65, t);
+          subBass.frequency.exponentialRampToValueAtTime(32, t + duration);
+
+          const subFilter = this.ctx.createBiquadFilter();
+          subFilter.type = 'lowpass';
+          subFilter.frequency.setValueAtTime(80, t);
+
+          const subGain = this.ctx.createGain();
+          subGain.gain.setValueAtTime(0.01, t);
+          subGain.gain.linearRampToValueAtTime(0.65, t + 0.5);
+          subGain.gain.exponentialRampToValueAtTime(0.01, t + duration);
+
+          subBass.connect(subFilter);
+          subFilter.connect(subGain);
+          subGain.connect(this.ctx.destination);
+
+          // Master Rocket Thrust Gain
+          const masterThrustGain = this.ctx.createGain();
+          masterThrustGain.gain.setValueAtTime(0.02, t);
+          masterThrustGain.gain.linearRampToValueAtTime(0.85, t + 0.6); // Instant liftoff roar
+          masterThrustGain.gain.setValueAtTime(0.80, t + 2.4);
+          masterThrustGain.gain.exponentialRampToValueAtTime(0.01, t + duration); // Smooth fading into space
+
+          noiseSource.connect(lowFilter);
+          lowFilter.connect(masterThrustGain);
+          masterThrustGain.connect(this.ctx.destination);
+
+          noiseSource.start(t);
+          subBass.start(t);
+          noiseSource.stop(t + duration);
+          subBass.stop(t + duration);
+        } catch(e) {
+          console.error(e);
+        }
+      }
+    }
+    const audio = new SoundEngine();
+
+    /* =========================================================
+       ASSETS & BASE DIMENSIONS (ENLARGED PARTS)
+       ========================================================= */
+    const ASSETS = {
+      box: 'box.png',
+      icons: ['icons/1.png', 'icons/2.png', 'icons/3.png', 'icons/4.png', 'icons/5.png'],
+      parts: ['parts/1.png', 'parts/2.png', 'parts/3.png', 'parts/4.png', 'parts/5.png'],
+      readyRocket: 'ready rocket.png',
+      timer: 'timer/timer.png'
+    };
+
+    const PART_DIMENSIONS = [
+      { w: 720, h: 600 },
+      { w: 840, h: 960 },
+      { w: 660, h: 720 },
+      { w: 660, h: 720 },
+      { w: 780, h: 540 }
+    ];
+
+    const GRAMMAR_QUESTIONS = [
+      {
+        prompt: "1. Look at those dark clouds! It __________ (rain) soon.",
+        validAnswers: ["is going to rain", "'s going to rain", "will rain"],
+        hint: "Clue: There is clear visible evidence right now (dark clouds). Think about predictions based on present evidence!"
+      },
+      {
+        prompt: "2. I think humans __________ (live) on Mars one day.",
+        validAnswers: ["will live", "'ll live"],
+        hint: "Clue: 'I think' expresses a personal belief/opinion about the far future, not a scheduled timetable."
+      },
+      {
+        prompt: "3. We __________ (visit) the space museum tomorrow. We have already bought the tickets.",
+        validAnswers: ["are visiting", "'re visiting", "are going to visit", "'re going to visit"],
+        hint: "Clue: The tickets are bought! This is a fixed arrangement with a specific time and plan."
+      },
+      {
+        prompt: "4. The spaceship __________ (leave) at 8:30 tomorrow morning.",
+        validAnswers: ["leaves"],
+        hint: "Clue: 8:30 is an official timetable/schedule. Which tense do we use for set timetables?"
+      },
+      {
+        prompt: "5. Don't worry! I __________ (help) you repair the spaceship.",
+        validAnswers: ["will help", "'ll help"],
+        hint: "Clue: A spontaneous offer made at the moment of speaking ('Don't worry!')."
+      }
+    ];
+
+    const SECRET_PIN = "7429";
+    const PIN_PUZZLES = [
+      {
+        title: "PUZZLE 1: EXPRESSION MATCHING",
+        digit: '7',
+        pairs: [
+          { expr: "Tomorrow at 9 AM", use: "Official schedule / timetable" },
+          { expr: "Look out! It's going to...", use: "Prediction from visual evidence" },
+          { expr: "I think maybe we will...", use: "General future belief" }
+        ]
+      },
+      {
+        title: "PUZZLE 2: SENTENCE ORDERING",
+        digit: '4',
+        words: ["probably", "aliens", "We", "meet", "will"],
+        correct: "We will probably meet aliens"
+      },
+      {
+        title: "PUZZLE 3: CHOOSE THE ACCURATE FORM",
+        digit: '2',
+        sentence: "The shuttle flight ______ at 06:00 sharp tomorrow morning.",
+        options: [
+          { text: "A. leaves", correct: true },
+          { text: "B. is going to leaving", correct: false },
+          { text: "C. will leaving", correct: false }
+        ]
+      },
+      {
+        title: "PUZZLE 4: FUTURE COLLOCATION",
+        digit: '9',
+        sentence: "Complete the sentence: 'Are you ready? I think I ______ make some coffee for us.'",
+        options: [
+          { text: "will", correct: true },
+          { text: "am leaves", correct: false },
+          { text: "leaves", correct: false }
+        ]
+      }
+    ];
+
+    let currentGrammarIdx = 0;
+    let unlockedPartsCount = 0;
+    let currentPuzzleIdx = 0;
+    let enteredPin = "";
+    let isAssemblyCompleted = false;
+
+    function createBoxFallbackSVG() {
+      return "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+          <polygon points="50,15 85,32 50,50 15,32" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+          <polygon points="15,32 50,50 50,85 15,67" fill="#0369a1" stroke="#38bdf8" stroke-width="2"/>
+          <polygon points="50,50 85,32 85,67 50,85" fill="#075985" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="50" cy="40" r="6" fill="#f43f5e"/>
+        </svg>`);
+    }
+    function createPartFallbackSVG(partIndex) {
+      const colors = ['#f43f5e', '#38bdf8', '#a855f7', '#a855f7', '#fb923c'];
+      const labels = ['NOSE CONE', 'ROCKET BODY', 'LEFT WING', 'RIGHT WING', 'ENGINE'];
+      return "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+          <rect width="300" height="300" rx="20" fill="#1e1b4b" stroke="${colors[partIndex]}" stroke-width="4"/>
+          <circle cx="150" cy="130" r="60" fill="${colors[partIndex]}" opacity="0.3"/>
+          <text x="150" y="145" font-family="sans-serif" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">${partIndex+1}</text>
+          <text x="150" y="230" font-family="sans-serif" font-size="20" font-weight="bold" fill="${colors[partIndex]}" text-anchor="middle">${labels[partIndex]}</text>
+        </svg>`);
+    }
+
+    function buildStarField() {
+      const container = document.getElementById('space-bg');
+      for (let i = 0; i < 90; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 2.5 + 1;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + 'vw';
+        star.style.top = Math.random() * 100 + 'vh';
+        star.style.animationDelay = (Math.random() * 4) + 's';
+        container.appendChild(star);
+      }
+    }
+
+    /* =========================================================
+       STAGE 1: GRAMMAR CHALLENGE LOGIC
+       ========================================================= */
+    const grammarPromptEl = document.getElementById('grammar-prompt');
+    const grammarInputEl = document.getElementById('grammar-input');
+    const grammarFeedbackEl = document.getElementById('grammar-feedback');
+    const grammarStepLabelEl = document.getElementById('grammar-step-label');
+    const hintBoxEl = document.getElementById('hint-box');
+    const hintToggleBtn = document.getElementById('hint-toggle-btn');
+    const partsTrackerEl = document.getElementById('parts-tracker');
+
+    function loadGrammarQuestion(idx) {
+      if (idx >= GRAMMAR_QUESTIONS.length) {
+        document.getElementById('grammar-section').style.display = 'none';
+        return;
+      }
+      const q = GRAMMAR_QUESTIONS[idx];
+      grammarStepLabelEl.textContent = `CHALLENGE ${idx + 1} OF 5: FUTURE TENSES`;
+      grammarPromptEl.textContent = q.prompt;
+      grammarInputEl.value = "";
+      grammarFeedbackEl.textContent = "";
+      grammarFeedbackEl.className = "feedback-message";
+      hintBoxEl.textContent = q.hint;
+      hintBoxEl.style.display = "none";
+      grammarInputEl.focus();
+    }
+
+    hintToggleBtn.addEventListener('click', () => {
+      audio.beep(600, 'sine', 0.1);
+      const isVisible = hintBoxEl.style.display === 'block';
+      hintBoxEl.style.display = isVisible ? 'none' : 'block';
+    });
+
+    function validateGrammarAnswer() {
+      const currentQ = GRAMMAR_QUESTIONS[currentGrammarIdx];
+      let userAns = grammarInputEl.value.trim().toLowerCase();
+      userAns = userAns.replace(/’/g, "'").replace(/\s+/g, ' ');
+
+      if (!userAns) {
+        grammarFeedbackEl.textContent = "Please type an answer first!";
+        grammarFeedbackEl.className = "feedback-message error";
+        audio.wrong();
+        return;
+      }
+
+      const isMatch = currentQ.validAnswers.some(ans => {
+        const cleanAns = ans.trim().toLowerCase().replace(/’/g, "'");
+        return userAns === cleanAns;
+      });
+
+      if (isMatch) {
+        audio.correct();
+        grammarFeedbackEl.textContent = "🎉 Excellent! Correct future tense form!";
+        grammarFeedbackEl.className = "feedback-message success";
+        setTimeout(() => {
+          triggerDeliveryBox(currentGrammarIdx);
+        }, 600);
+      } else {
+        audio.wrong();
+        grammarFeedbackEl.textContent = "Not quite! Check the hint and try again.";
+        grammarFeedbackEl.className = "feedback-message error";
+      }
+    }
+
+    document.getElementById('submit-grammar-btn').addEventListener('click', validateGrammarAnswer);
+    grammarInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') validateGrammarAnswer();
+    });
+
+    /* =========================================================
+       COMPONENT DELIVERY (UNBOXING WITH ICONS)
+       ========================================================= */
+    const deliveryOverlay = document.getElementById('delivery-overlay');
+    const deliveryBoxInteractive = document.getElementById('delivery-box-interactive');
+    const boxWrapper = document.getElementById('box-wrapper');
+    const revealedIconWrapper = document.getElementById('revealed-icon-wrapper');
+    const unboxedIconImg = document.getElementById('unboxed-icon-img');
+    const deliveryHeading = document.getElementById('delivery-heading');
+    const deliveryInstruction = document.getElementById('delivery-instruction');
+    let pendingComponentIdx = 0;
+
+    function triggerDeliveryBox(partIdx) {
+      pendingComponentIdx = partIdx;
+      deliveryOverlay.style.display = 'flex';
+      boxWrapper.style.display = 'block';
+      revealedIconWrapper.style.display = 'none';
+      deliveryHeading.textContent = "NEW DELIVERY INCOMING!";
+      deliveryInstruction.textContent = "Click the container to unpack your rocket component!";
+      audio.beep(400, 'triangle', 0.2, 0.3);
+    }
+
+    deliveryBoxInteractive.addEventListener('click', () => {
+      if (revealedIconWrapper.style.display === 'block') return;
+      audio.pop();
+      boxWrapper.style.display = 'none';
+
+      const iconPath = ASSETS.icons[pendingComponentIdx];
+      unboxedIconImg.src = iconPath;
+      unboxedIconImg.onerror = () => { unboxedIconImg.src = createPartFallbackSVG(pendingComponentIdx); };
+
+      revealedIconWrapper.style.display = 'block';
+      deliveryHeading.textContent = `COMPONENT #${pendingComponentIdx + 1} UNLOCKED!`;
+      deliveryInstruction.textContent = "Transferring large part to assembly platform...";
+
+      setTimeout(() => {
+        deliveryOverlay.style.display = 'none';
+        spawnPartOnAssemblyDeck(pendingComponentIdx);
+        unlockedPartsCount++;
+        partsTrackerEl.textContent = `COMPONENTS: ${unlockedPartsCount}/5`;
+        document.getElementById('assembly-deck-status').textContent = `Components collected: ${unlockedPartsCount} of 5`;
+
+        currentGrammarIdx++;
+        if (currentGrammarIdx < GRAMMAR_QUESTIONS.length) {
+          loadGrammarQuestion(currentGrammarIdx);
+        } else {
+          document.getElementById('grammar-section').style.display = 'none';
+        }
+
+        if (unlockedPartsCount === 5) {
+          document.getElementById('finish-assembly-btn').style.display = 'block';
+        }
+      }, 1600);
+    });
+
+    /* =========================================================
+       ASSEMBLY DECK: 2X MORE ENLARGED PARTS (FROM parts/ FOLDER)
+       ========================================================= */
+    const assemblyDeck = document.getElementById('assembly-deck');
+
+    function spawnPartOnAssemblyDeck(partIdx) {
+      const partEl = document.createElement('div');
+      partEl.className = 'draggable-part';
+      partEl.dataset.idx = partIdx;
+
+      const dims = PART_DIMENSIONS[partIdx];
+      partEl.style.width = dims.w + 'px';
+      partEl.style.height = dims.h + 'px';
+
+      const deckRect = assemblyDeck.getBoundingClientRect();
+      
+      const offsets = [
+        { x: 0.5, y: 0.03 },
+        { x: 0.5, y: 0.22 },
+        { x: 0.18, y: 0.28 },
+        { x: 0.82, y: 0.28 },
+        { x: 0.5, y: 0.60 }
+      ];
+      const offset = offsets[partIdx] || { x: 0.5, y: 0.5 };
+
+      let left = (deckRect.width * offset.x) - (dims.w / 2);
+      let top = Math.max(10, deckRect.height * offset.y);
+
+      partEl.style.left = left + 'px';
+      partEl.style.top = top + 'px';
+
+      const img = document.createElement('img');
+      img.src = ASSETS.parts[partIdx];
+      img.onerror = () => { img.src = createPartFallbackSVG(partIdx); };
+
+      partEl.appendChild(img);
+      makeElementDraggable(partEl, assemblyDeck);
+      assemblyDeck.appendChild(partEl);
+    }
+
+    function makeElementDraggable(elm, container) {
+      let isDragging = false;
+      let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+      elm.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        elm.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = elm.offsetLeft;
+        initialTop = elm.offsetTop;
+        audio.beep(300, 'sine', 0.05, 0.1);
+      });
+
+      elm.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        let newX = initialLeft + dx;
+        let newY = initialTop + dy;
+
+        const maxW = container.clientWidth - elm.clientWidth;
+        const maxH = container.clientHeight - elm.clientHeight;
+        newX = Math.max(-250, Math.min(newX, maxW + 250));
+        newY = Math.max(0, Math.min(newY, maxH));
+
+        elm.style.left = newX + 'px';
+        elm.style.top = newY + 'px';
+      });
+
+      function stopDrag(e) {
+        if (isDragging) {
+          isDragging = false;
+          try { elm.releasePointerCapture(e.pointerId); } catch(err){}
+        }
+      }
+      elm.addEventListener('pointerup', stopDrag);
+      elm.addEventListener('pointercancel', stopDrag);
+    }
+
+    document.getElementById('finish-assembly-btn').addEventListener('click', () => {
+      audio.correct();
+      isAssemblyCompleted = true;
+      document.getElementById('finish-assembly-btn').style.display = 'none';
+      document.getElementById('assembly-deck-status').textContent = "ROCKET FULLY ASSEMBLED AND SEALED!";
+      document.getElementById('assembly-deck').style.borderColor = '#10b981';
+      document.getElementById('assembly-deck').style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.5)';
+
+      setTimeout(() => {
+        document.getElementById('puzzle-stage-container').style.display = 'block';
+        loadPuzzle(0);
+        document.getElementById('puzzle-stage-container').scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    });
+
+    /* =========================================================
+       STAGE 2: PIN DECRYPTION PUZZLES
+       ========================================================= */
+    const puzzleStageContainer = document.getElementById('puzzle-stage-container');
+    const puzzleBodyEl = document.getElementById('puzzle-body');
+    const puzzleStepLabelEl = document.getElementById('puzzle-step-label');
+    const puzzleFeedbackEl = document.getElementById('puzzle-feedback');
+    const pinTrackerEl = document.getElementById('pin-tracker');
+
+    function loadPuzzle(pIdx) {
+      currentPuzzleIdx = pIdx;
+      puzzleFeedbackEl.textContent = "";
+      puzzleFeedbackEl.className = "feedback-message";
+      puzzleStepLabelEl.textContent = `PIN DECRYPTION: PUZZLE ${pIdx + 1} OF 4`;
+
+      const pData = PIN_PUZZLES[pIdx];
+
+      if (pIdx === 0) {
+        puzzleBodyEl.innerHTML = `
+          <p style="margin-bottom:12px; color:#cbd5e1;">Match each Future expression with its corresponding grammar function:</p>
+          <div class="match-columns">
+            <div class="match-col" id="col-left"></div>
+            <div class="match-col" id="col-right"></div>
+          </div>
+        `;
+        buildMatchingPuzzle(pData);
+      } else if (pIdx === 1) {
+        puzzleBodyEl.innerHTML = `
+          <p style="margin-bottom:12px; color:#cbd5e1;">Click words in the correct order to construct a future prediction:</p>
+          <div class="words-container" id="constructed-sentence"></div>
+          <div class="words-container" id="word-bank"></div>
+          <button class="primary-btn" id="check-order-btn">VERIFY SENTENCE</button>
+        `;
+        buildSentencePuzzle(pData);
+      } else if (pIdx === 2 || pIdx === 3) {
+        puzzleBodyEl.innerHTML = `
+          <p style="font-size:1.15rem; margin-bottom:14px; color:#f1f5f9;">${pData.sentence}</p>
+          <div class="quiz-options">
+            ${pData.options.map((opt, i) => `
+              <button class="quiz-opt-btn" data-correct="${opt.correct}">${opt.text}</button>
+            `).join('')}
+          </div>
+        `;
+        buildQuizPuzzle(pData);
+      }
+    }
+
+    function revealPinDigit(digitIdx, digitValue) {
+      audio.correct();
+      const slot = document.getElementById(`slot-${digitIdx}`);
+      slot.textContent = digitValue;
+      slot.classList.add('revealed');
+      pinTrackerEl.textContent = `PIN CODES: ${digitIdx + 1}/4`;
+
+      puzzleFeedbackEl.textContent = `✅ Correct! PIN Digit #${digitIdx + 1} unlocked: [ ${digitValue} ]`;
+      puzzleFeedbackEl.className = "feedback-message success";
+
+      setTimeout(() => {
+        if (digitIdx + 1 < PIN_PUZZLES.length) {
+          loadPuzzle(digitIdx + 1);
+        } else {
+          puzzleStageContainer.style.display = 'none';
+          openLaunchConsoleModal();
+        }
+      }, 1500);
+    }
+
+    function buildMatchingPuzzle(pData) {
+      const leftCol = document.getElementById('col-left');
+      const rightCol = document.getElementById('col-right');
+      let selectedLeft = null;
+      let matchedCount = 0;
+
+      pData.pairs.forEach((pair, idx) => {
+        const itemLeft = document.createElement('div');
+        itemLeft.className = 'match-item';
+        itemLeft.textContent = pair.expr;
+        itemLeft.dataset.pair = idx;
+        itemLeft.addEventListener('click', () => {
+          if (itemLeft.classList.contains('matched')) return;
+          audio.beep(500, 'sine', 0.08);
+          leftCol.querySelectorAll('.match-item').forEach(el => el.classList.remove('selected'));
+          itemLeft.classList.add('selected');
+          selectedLeft = itemLeft;
+        });
+        leftCol.appendChild(itemLeft);
+
+        const itemRight = document.createElement('div');
+        itemRight.className = 'match-item';
+        itemRight.textContent = pair.use;
+        itemRight.dataset.pair = idx;
+        itemRight.addEventListener('click', () => {
+          if (itemRight.classList.contains('matched') || !selectedLeft) return;
+          if (selectedLeft.dataset.pair === itemRight.dataset.pair) {
+            audio.pop();
+            selectedLeft.classList.add('matched');
+            itemRight.classList.add('matched');
+            selectedLeft.classList.remove('selected');
+            selectedLeft = null;
+            matchedCount++;
+            if (matchedCount === pData.pairs.length) {
+              revealPinDigit(0, pData.digit);
+            }
+          } else {
+            audio.wrong();
+            selectedLeft.classList.remove('selected');
+            selectedLeft = null;
+          }
+        });
+        rightCol.appendChild(itemRight);
+      });
+    }
+
+    function buildSentencePuzzle(pData) {
+      const bank = document.getElementById('word-bank');
+      const target = document.getElementById('constructed-sentence');
+      
+      const shuffled = [...pData.words].sort(() => Math.random() - 0.5);
+      shuffled.forEach(w => {
+        const tile = document.createElement('div');
+        tile.className = 'word-tile';
+        tile.textContent = w;
+        tile.addEventListener('click', () => {
+          audio.beep(480, 'sine', 0.08);
+          if (tile.parentElement === bank) {
+            target.appendChild(tile);
+          } else {
+            bank.appendChild(tile);
+          }
+        });
+        bank.appendChild(tile);
+      });
+
+      document.getElementById('check-order-btn').addEventListener('click', () => {
+        const currentWords = Array.from(target.querySelectorAll('.word-tile')).map(t => t.textContent).join(' ');
+        if (currentWords.toLowerCase() === pData.correct.toLowerCase()) {
+          revealPinDigit(1, pData.digit);
+        } else {
+          audio.wrong();
+          puzzleFeedbackEl.textContent = "Word order is not quite right. Try again!";
+          puzzleFeedbackEl.className = "feedback-message error";
+        }
+      });
+    }
+
+    function buildQuizPuzzle(pData) {
+      const btns = puzzleBodyEl.querySelectorAll('.quiz-opt-btn');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.correct === "true") {
+            revealPinDigit(currentPuzzleIdx, pData.digit);
+          } else {
+            audio.wrong();
+            puzzleFeedbackEl.textContent = "Incorrect choice. Re-read the sentence tense clue!";
+            puzzleFeedbackEl.className = "feedback-message error";
+          }
+        });
+      });
+    }
+
+    /* =========================================================
+       STAGE 3: LAUNCH CONSOLE MODAL
+       ========================================================= */
+    const launchConsoleModal = document.getElementById('launch-console-modal');
+    const consolePinDisplay = document.getElementById('console-pin-display');
+    const keypadButtons = document.querySelectorAll('.btn-key-overlay');
+    const launchTriggerBtn = document.getElementById('invisible-launch-trigger');
+    const pinClearBtn = document.getElementById('pin-clear-btn');
+    const toggleCalibrationBtn = document.getElementById('toggle-calibration-btn');
+    const consoleFeedback = document.getElementById('console-feedback');
+
+    function openLaunchConsoleModal() {
+      launchConsoleModal.classList.add('active');
+      audio.beep(880, 'sine', 0.25, 0.3);
+    }
+
+    toggleCalibrationBtn.addEventListener('click', () => {
+      document.body.classList.toggle('show-calibration');
+      const isOn = document.body.classList.contains('show-calibration');
+      toggleCalibrationBtn.textContent = isOn ? "🔒 HIDE BUTTON BORDERS" : "👁️ SHOW BUTTON BORDERS";
+    });
+
+    keypadButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const digit = btn.dataset.digit;
+        if (enteredPin.length < 4) {
+          audio.panelKeySound(digit);
+          enteredPin += digit;
+          updatePinDisplay();
+        }
+      });
+    });
+
+    pinClearBtn.addEventListener('click', () => {
+      audio.panelKeySound('C');
+      enteredPin = "";
+      updatePinDisplay();
+      consoleFeedback.textContent = "";
+    });
+
+    function updatePinDisplay() {
+      let displayStr = "";
+      for (let i = 0; i < 4; i++) {
+        displayStr += enteredPin[i] ? enteredPin[i] : "-";
+      }
+      consolePinDisplay.textContent = displayStr;
+    }
+
+    launchTriggerBtn.addEventListener('click', () => {
+      if (enteredPin.length < 4) {
+        audio.wrong();
+        consoleFeedback.textContent = "ENTER ALL 4 PIN DIGITS BEFORE LAUNCHING.";
+        consoleFeedback.className = "feedback-message error";
+        return;
+      }
+      if (enteredPin === SECRET_PIN) {
+        audio.correct();
+        consoleFeedback.textContent = "ACCESS GRANTED! INITIATING COUNTDOWN...";
+        consoleFeedback.className = "feedback-message success";
+        
+        setTimeout(() => {
+          launchConsoleModal.style.transition = 'opacity 0.6s ease';
+          launchConsoleModal.style.opacity = '0';
+          setTimeout(() => {
+            launchConsoleModal.classList.remove('active');
+            startCinematicCountdown();
+          }, 600);
+        }, 1000);
+
+      } else {
+        audio.wrong();
+        consoleFeedback.textContent = "ACCESS DENIED. INVALID PIN CODE. TRY AGAIN.";
+        consoleFeedback.className = "feedback-message error";
+        enteredPin = "";
+        updatePinDisplay();
+      }
+    });
+
+    /* =========================================================
+       STAGE 4: COUNTDOWN & READY ROCKET LAUNCH (HEAVY JET ROAR)
+       ========================================================= */
+    function startCinematicCountdown() {
+      const modal = document.getElementById('launch-cinematic-modal');
+      const countEl = document.getElementById('countdown-text');
+      const countdownBox = document.getElementById('countdown-overlay-box');
+      const rocketBox = document.getElementById('ready-rocket-box');
+
+      modal.style.display = 'flex';
+      countdownBox.style.display = 'flex';
+      rocketBox.classList.remove('rocket-launching-motion');
+      rocketBox.classList.remove('rumbling');
+
+      let count = 3;
+      countEl.textContent = count;
+      audio.countdownBeep(false);
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countEl.textContent = count;
+          countEl.style.animation = 'none';
+          countEl.offsetHeight; // trigger reflow
+          countEl.style.animation = 'scaleCountdown 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+          audio.countdownBeep(false);
+        } else if (count === 0) {
+          clearInterval(timer);
+          countEl.textContent = "LIFTOFF!";
+          countEl.style.fontSize = "4.2rem";
+          audio.countdownBeep(true);
+
+          // Deep engine physical rumbling
+          rocketBox.classList.add('rumbling');
+
+          setTimeout(() => {
+            countdownBox.style.transition = 'opacity 0.4s ease';
+            countdownBox.style.opacity = '0';
+            setTimeout(() => { countdownBox.style.display = 'none'; countdownBox.style.opacity = '1'; }, 400);
+
+            // REAL HEAVY JET BLAST SOUND
+            audio.ignition();
+            rocketBox.classList.remove('rumbling');
+            rocketBox.classList.add('rocket-launching-motion');
+            
+            setTimeout(() => {
+              modal.style.display = 'none';
+              document.getElementById('victory-modal').style.display = 'flex';
+            }, 4000);
+          }, 800);
+        }
+      }, 1000);
+    }
+
+    document.getElementById('restart-game-btn').addEventListener('click', () => {
+      location.reload();
+    });
+
+    const audioToggleBtn = document.getElementById('audio-toggle');
+    audioToggleBtn.addEventListener('click', () => {
+      audio.enabled = !audio.enabled;
+      audioToggleBtn.textContent = audio.enabled ? "🔊" : "🔇";
+      audioToggleBtn.style.borderColor = audio.enabled ? "#00f0ff" : "#64748b";
+      audioToggleBtn.style.color = audio.enabled ? "#00f0ff" : "#64748b";
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      buildStarField();
+      loadGrammarQuestion(0);
+    });
+  </script>
+</body>
+</html>
